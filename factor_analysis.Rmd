@@ -1,0 +1,80 @@
+---
+title: "FactorAnalysis"
+output: github_document
+---
+
+```{r, echo=FALSE}
+## Installing packages if not available
+list.of.packages <- c("psych", "dplyr","readxl","stringr","GPArotation")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+```
+
+```{r, echo=FALSE}
+## Loading required packages into the environment
+library(psych)
+library(dplyr)
+library(readxl)
+library(stringr)
+library(GPArotation)
+options(warn=-1)
+```
+
+```{r, echo=FALSE}
+## loading functions to process data
+source("support_functions.R")
+```
+
+```{r, echo=FALSE}
+file <- "data/2018-public-data-file_parent.xlsx"
+sheet <- "Parent # of Resp"
+```
+
+```{r}
+## loading ELA & Math performance data to get list of schools to subset
+perf <- load_perf_data()
+## loading survey data
+parent_survey_data <- read_survey_data(file,sheet)
+```
+
+```{r}
+## filtering 
+parent_responses <- parent_survey_data[[1]]
+parent_responses <- parent_responses[parent_responses$dbn %in% perf$DBN,]
+```
+
+```{r}
+## Defining numerical ratings for responses
+used_ratings <- c("Strongly agree","Agree","Disagree","Strongly disagree","Very satisfied","Satisfied","Dissatisfied","Very dissatisfied","Don\'t know","Very Dissatisfied","Very unlikely","Somewhat unlikely","Somewhat likely", "Very likely","Never","Rarely","Sometimes","Often")
+rating_values <- c(5,4,2,1,5,4,2,1,0,1,1,2,4,5,1,2,4,5)
+
+## Summarizing rating scores for each question
+psr <- get_summarized_scores(parent_responses,parent_survey_data[[2]],used_ratings,rating_values)
+psr$year <- 2018
+
+## filtering out questions with >5% missingness
+## pre-k/3-K, and high-school specific questions get filtered out
+## Also Q7 for which responses can not be coded numerically given its subjective nature
+psr <- psr[,apply(psr[,(1:(ncol(psr)-2))],2,FUN=function(x) sum(is.na(x)))*100/nrow(psr) < 5]
+```
+
+```{r}
+## parallel plot to determine approximate number of factors
+fa.parallel(psr[,1:(ncol(psr)-2)],fa="fa",fm="mle")
+```
+
+```{r}
+## fitting factor model with 8 factors after couple of iterations
+pfm <- fa(psr[,1:(ncol(psr)-2)],fm="mle",rotate='oblimin',nfactors=8)
+```
+
+```{r}
+## factor loadings/weights
+print(pfm$loadings,cutoff=0)
+```
+
+```{r}
+## diagram displaying factor-question associations
+fa.diagram(pfm,cut=0.245)
+```
+

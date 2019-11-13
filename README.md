@@ -5,7 +5,7 @@
 ## Survey analysis
 This repo contains the R Markdown notebook (`factor_analysis.Rmd`) for Data Clinic's blog post [Making sense of surveys](https://medium.com/dataclinic/making-sense-of-surveys-754fdc1372ed)
 
-The knit notebook is also available as a GitHub markdown file and the requisite data are present in the data folder. The source of the data sets are listed below.
+The knit notebook is also available as a GitHub markdown file (`factor_analysis.md`) and the requisite data are present in the `data/` folder.
 
 ### Data Sources
 - [2018 School Survey Parent responses](https://auth-infohub.nyced.org/docs/default-source/default-document-library/2018-public-data-file_parent.xlsx)
